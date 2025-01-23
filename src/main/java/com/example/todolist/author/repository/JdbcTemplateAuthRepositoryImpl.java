@@ -3,13 +3,12 @@ package com.example.todolist.author.repository;
 import com.example.todolist.author.dto.AuthorResponseDto;
 import com.example.todolist.author.entity.Author;
 import com.example.todolist.author.enums.AuthorColumn;
-import org.springframework.http.HttpStatus;
+import com.example.todolist.exception.NotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -61,7 +60,7 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
     @Override
     public Author findAuthorByIdOrElseThrow(Long id) {
         List<Author> result = jdbcTemplate.query("select * from author where id = ?", authorRowMapper(), id);
-        return result.stream().findAny().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id));
+        return result.stream().findAny().orElseThrow(() -> new NotFoundException("해당 아이디의 작성자가 존재하지 않습니다 id = " + id));
     }
 
     @Override

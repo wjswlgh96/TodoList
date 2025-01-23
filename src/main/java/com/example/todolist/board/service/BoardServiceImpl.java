@@ -7,10 +7,11 @@ import com.example.todolist.board.dto.PagingResponseDto;
 import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.repository.BoardRepository;
 import com.example.todolist.board.entity.Paging;
-import org.springframework.http.HttpStatus;
+import com.example.todolist.exception.NotFoundException;
+import com.example.todolist.exception.IllegalArgumentException;
+import com.example.todolist.exception.InvalidPasswordException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -53,17 +54,17 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardResponseDto updateBoard(Long id, String password, String title, String contents) {
         if (title == null || contents == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
+            throw new IllegalArgumentException("제목이나 내용 값이 빠졌습니다. 두 값은 필수입니다.");
         }
 
         BoardPasswordResponseDto board = boardRepository.findBoardByIdOrElseThrow(id);
         if (!validatePassword(board.getPassword(), password)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong Password");
+            throw new InvalidPasswordException();
         }
 
         int updatedRow = boardRepository.updateBoard(id, title, contents);
         if (updatedRow == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No data has been modified.");
+            throw new NotFoundException("수정할 게시글이 존재하지 않습니다. 아이디를 확인해주세요.");
         }
 
         board = boardRepository.findBoardByIdOrElseThrow(id);
@@ -74,12 +75,12 @@ public class BoardServiceImpl implements BoardService {
     public void deleteMemo(Long id, String password) {
         BoardPasswordResponseDto board = boardRepository.findBoardByIdOrElseThrow(id);
         if (!validatePassword(board.getPassword(), password)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong Password");
+            throw new InvalidPasswordException();
         }
 
         int deletedRow = boardRepository.deleteBoard(id);
         if (deletedRow == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
+            throw new NotFoundException("삭제할 게시글이 존재하지 않습니다. 아이디를 확인해주세요.");
         }
     }
 

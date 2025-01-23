@@ -5,6 +5,7 @@ import com.example.todolist.board.dto.BoardResponseDto;
 import com.example.todolist.board.dto.PagingResponseDto;
 import com.example.todolist.board.service.BoardService;
 import com.example.todolist.board.entity.Paging;
+import com.example.todolist.exception.IllegalArgumentException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,30 +28,24 @@ public class BoardController {
         return new ResponseEntity<>(boardService.saveBoard(requestDto), HttpStatus.OK);
     }
 
+    // Dto를 interface화 시킬 수 있나 고민했다가 포기하고 ?로 타입에 자유를 줬음
     @GetMapping
-    public ResponseEntity<PagingResponseDto<BoardResponseDto>> findAllBoards(
+    public ResponseEntity<?> findAllBoards(
             @RequestParam(value = "created_at", required = false) String createdAt,
             @RequestParam(value = "author_id", required = false) Long authorId,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "size", required = false) Integer size
     ) {
+        // PagingResponseDto = Pagination을 위한 Dto
         if (page != null && size != null) {
             if (page < 1 || size < 1 || size > 100) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number and size must be greater than 0 and size must be less than or equal to 100");
+                throw new IllegalArgumentException("페이지, 사이즈는 0보다 커야하고, 사이즈는 100보단 작아야 합니다.");
             }
             Paging paging = new Paging(page, size);
             PagingResponseDto<BoardResponseDto> response = boardService.findAllBoards(createdAt, authorId, paging);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
-            List<BoardResponseDto> boards = boardService.findAllBoards(createdAt, authorId);
-            PagingResponseDto<BoardResponseDto> response = new PagingResponseDto<>(
-                    boards,
-                    1,
-                    boards.size(),
-                    boards.size(),
-                    1
-            );
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(boardService.findAllBoards(createdAt, authorId), HttpStatus.OK);
         }
     }
 

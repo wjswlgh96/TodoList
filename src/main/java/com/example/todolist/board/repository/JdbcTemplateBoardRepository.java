@@ -6,14 +6,13 @@ import com.example.todolist.board.dto.PagingResponseDto;
 import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.enums.BoardColumn;
 import com.example.todolist.board.entity.Paging;
-import org.springframework.http.HttpStatus;
+import com.example.todolist.exception.NotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -25,6 +24,9 @@ import java.util.Map;
 
 @Repository
 public class JdbcTemplateBoardRepository implements BoardRepository {
+
+    private static final String GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY =
+            "SELECT b.*, a.name AS author_name FROM board AS b JOIN author AS a ON b.author_id = a.id";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -52,14 +54,19 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
         parameters.put(BoardColumn.CONTENTS.getColumnName(), board.getContents());
 
         Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
-
-        List<BoardResponseDto> result = jdbcTemplate.query("SELECT b.*, a.name AS author_name FROM board AS b JOIN author AS a ON b.author_id = a.id WHERE b.id = ?", new Object[]{key.longValue()}, boardResponseRowMapper());
-        return result.stream().findAny().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + key.longValue()));
+        long id = key.longValue();
+        List<BoardResponseDto> result = jdbcTemplate.query(
+                GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY + " WHERE b.id = ?",
+                new Object[]{id}, boardResponseRowMapper()
+        );
+        
+        // created_at과 updated_at을 자동화시켜서 id를 다시 받고 적용시켜줌 author_name 도 DB에 추가되어있지 않음이 이유
+        return result.stream().findAny().orElseThrow(() -> new NotFoundException("해당 아이디의 게시글이 존재하지 않습니다 id = " + id));
     }
 
     @Override
     public List<BoardResponseDto> findAllBoards(String createdAt, Long authorId) {
-        StringBuilder sql = new StringBuilder("SELECT b.*, a.name AS author_name FROM board AS b JOIN author AS a ON b.author_id = a.id WHERE 1=1");
+        StringBuilder sql = new StringBuilder(GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY + " WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
         if (authorId != null) {
@@ -94,7 +101,7 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
         Long totalItems = jdbcTemplate.queryForObject(countSql, countParams.toArray(), Long.class);
 
         // 데이터 조회
-        String dataSql = "SELECT b.*, a.name AS author_name FROM board b JOIN author a ON b.author_id = a.id WHERE 1=1";
+        String dataSql = GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY + " WHERE 1=1";
         List<Object> dataParams = new ArrayList<>();
 
         if (authorId != null) {
@@ -125,8 +132,10 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
 
     @Override
     public BoardPasswordResponseDto findBoardByIdOrElseThrow(Long id) {
-        List<BoardPasswordResponseDto> result = jdbcTemplate.query("SELECT b.*, a.name AS author_name FROM board AS b JOIN author AS a ON b.author_id = a.id WHERE b.id = ?", boardRowMapper(), id);
-        return result.stream().findAny().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id));
+        List<BoardPasswordResponseDto> result = jdbcTemplate.query(
+                "SELECT b.*, a.name AS author_name FROM board AS b JOIN author AS a ON b.author_id = a.id WHERE b.id = ?", boardRowMapper(), id
+        );
+        return result.stream().findAny().orElseThrow(() -> new NotFoundException("해당 아이디의 게시글이 존재하지 않습니다 id = " + id));
     }
 
     @Override
