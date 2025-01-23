@@ -2,6 +2,7 @@ package com.example.todolist.author.repository;
 
 import com.example.todolist.author.dto.AuthorResponseDto;
 import com.example.todolist.author.entity.Author;
+import com.example.todolist.author.enums.AuthorColumn;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -30,13 +31,15 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
     public AuthorResponseDto saveAuthor(Author author) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
         jdbcInsert.withTableName("author")
-                        .usingColumns("name", "email")      // 사용할 컬럼을 명확히 지정해주지 않아 created_At과 updated_at이 NULL이 되어버린 문제
+                        .usingColumns(
+                                AuthorColumn.NAME.getColumnName(),
+                                AuthorColumn.EMAIL.getColumnName()
+                        )      // 사용할 컬럼을 명확히 지정해주지 않아 created_At과 updated_at이 NULL이 되어버린 문제
                         .usingGeneratedKeyColumns("id");
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("name", author.getName());
-        parameters.put("email", author.getEmail());
-
+        parameters.put(AuthorColumn.NAME.getColumnName(), author.getName());
+        parameters.put(AuthorColumn.EMAIL.getColumnName(), author.getEmail());
 
         Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
         Author insertedAuthor = findAuthorByIdOrElseThrow(key.longValue());
@@ -76,11 +79,11 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
             @Override
             public Author mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new Author(
-                        rs.getLong("id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getTimestamp("created_at").toLocalDateTime(),
-                        rs.getTimestamp("updated_at").toLocalDateTime()
+                        rs.getLong(AuthorColumn.ID.getColumnName()),
+                        rs.getString(AuthorColumn.NAME.getColumnName()),
+                        rs.getString(AuthorColumn.EMAIL.getColumnName()),
+                        rs.getTimestamp(AuthorColumn.CREATED_AT.getColumnName()).toLocalDateTime(),
+                        rs.getTimestamp(AuthorColumn.UPDATED_AT.getColumnName()).toLocalDateTime()
                 );
             }
         };
@@ -91,11 +94,11 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
             @Override
             public AuthorResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new AuthorResponseDto(
-                        rs.getLong("id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getTimestamp("created_at").toLocalDateTime(),
-                        rs.getTimestamp("updated_at").toLocalDateTime()
+                        rs.getLong(AuthorColumn.ID.getColumnName()),
+                        rs.getString(AuthorColumn.NAME.getColumnName()),
+                        rs.getString(AuthorColumn.EMAIL.getColumnName()),
+                        rs.getTimestamp(AuthorColumn.CREATED_AT.getColumnName()).toLocalDateTime(),
+                        rs.getTimestamp(AuthorColumn.UPDATED_AT.getColumnName()).toLocalDateTime()
                 );
             }
         };

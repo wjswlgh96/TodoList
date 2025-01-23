@@ -3,6 +3,7 @@ package com.example.todolist.board.repository;
 import com.example.todolist.board.dto.BoardRequestDto;
 import com.example.todolist.board.dto.BoardResponseDto;
 import com.example.todolist.board.entity.Board;
+import com.example.todolist.board.enums.BoardColumn;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -34,14 +35,19 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
     public BoardResponseDto saveBoard(Board board) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
         jdbcInsert.withTableName("board")
-                .usingColumns("password", "author_id", "title", "contents")
+                .usingColumns(
+                        BoardColumn.PASSWORD.getColumnName(),
+                        BoardColumn.AUTHOR_ID.getColumnName(),
+                        BoardColumn.TITLE.getColumnName(),
+                        BoardColumn.CONTENTS.getColumnName()
+                )
                 .usingGeneratedKeyColumns("id");
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("password", board.getPassword());
-        parameters.put("author_id", board.getAuthorId());
-        parameters.put("title", board.getTitle());
-        parameters.put("contents", board.getContents());
+        parameters.put(BoardColumn.PASSWORD.getColumnName(), board.getPassword());
+        parameters.put(BoardColumn.AUTHOR_ID.getColumnName(), board.getAuthorId());
+        parameters.put(BoardColumn.TITLE.getColumnName(), board.getTitle());
+        parameters.put(BoardColumn.CONTENTS.getColumnName(), board.getContents());
 
         Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
         Board insertedBoard = findBoardByIdOrElseThrow(key.longValue());
@@ -94,12 +100,12 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
             @Override
             public BoardResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new BoardResponseDto(
-                        rs.getLong("id"),
-                        rs.getLong("author_id"),
-                        rs.getString("title"),
-                        rs.getString("contents"),
-                        rs.getTimestamp("created_at").toLocalDateTime(),
-                        rs.getTimestamp("updated_at").toLocalDateTime()
+                        rs.getLong(BoardColumn.ID.getColumnName()),
+                        rs.getLong(BoardColumn.AUTHOR_ID.getColumnName()),
+                        rs.getString(BoardColumn.TITLE.getColumnName()),
+                        rs.getString(BoardColumn.CONTENTS.getColumnName()),
+                        rs.getTimestamp(BoardColumn.CREATED_AT.getColumnName()).toLocalDateTime(),
+                        rs.getTimestamp(BoardColumn.UPDATED_AT.getColumnName()).toLocalDateTime()
                 );
             }
         };
@@ -110,13 +116,13 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
             @Override
             public Board mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new Board(
-                        rs.getLong("id"),
-                        rs.getLong("author_id"),
-                        rs.getString("password"),
-                        rs.getString("title"),
-                        rs.getString("contents"),
-                        rs.getTimestamp("created_at").toLocalDateTime(),
-                        rs.getTimestamp("updated_at").toLocalDateTime()
+                        rs.getLong(BoardColumn.ID.getColumnName()),
+                        rs.getLong(BoardColumn.AUTHOR_ID.getColumnName()),
+                        rs.getString(BoardColumn.PASSWORD.getColumnName()),
+                        rs.getString(BoardColumn.TITLE.getColumnName()),
+                        rs.getString(BoardColumn.CONTENTS.getColumnName()),
+                        rs.getTimestamp(BoardColumn.CREATED_AT.getColumnName()).toLocalDateTime(),
+                        rs.getTimestamp(BoardColumn.UPDATED_AT.getColumnName()).toLocalDateTime()
                 );
             }
         };
