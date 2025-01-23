@@ -54,8 +54,6 @@ public class BoardServiceImpl implements BoardService {
 
         Board board = boardRepository.findBoardByIdOrElseThrow(id);
         if (!validatePassword(board.getPassword(), password)) {
-            System.out.println("board.getPassword() = " + board.getPassword());
-            System.out.println("password = " + password);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong Password");
         }
 
@@ -65,6 +63,19 @@ public class BoardServiceImpl implements BoardService {
         }
         board.updateBoard(author, contents);
         return new BoardResponseDto(board);
+    }
+
+    @Override
+    public void deleteMemo(Long id, String password) {
+        Board board = boardRepository.findBoardByIdOrElseThrow(id);
+        if (!validatePassword(board.getPassword(), password)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong Password");
+        }
+
+        int deletedRow = boardRepository.deleteBoard(id);
+        if (deletedRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id);
+        }
     }
 
     private boolean validatePassword(String dbPassword, String password) {

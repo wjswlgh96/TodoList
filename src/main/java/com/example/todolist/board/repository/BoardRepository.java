@@ -14,4 +14,6 @@ public interface BoardRepository {
     Board findBoardByIdOrElseThrow(Long id);
 
     int updateBoard(Long id, String author, String contents);
+
+    int deleteBoard(Long id);
 }

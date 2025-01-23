@@ -42,4 +42,10 @@ public class BoardController {
     public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
         return new ResponseEntity<>(boardService.updateBoard(id, requestDto.getPassword(), requestDto.getAuthor(), requestDto.getContents()), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
+        boardService.deleteMemo(id, requestDto.getPassword());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

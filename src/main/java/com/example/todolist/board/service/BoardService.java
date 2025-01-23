@@ -14,4 +14,5 @@ public interface BoardService {
 
     BoardResponseDto updateBoard(Long id, String password, String author, String contents);
 
+    void deleteMemo(Long id, String password);
 }

@@ -84,6 +84,11 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
         return jdbcTemplate.update("update board set author = ?, contents = ?, updated_at = ? where id = ?", author, contents, LocalDateTime.now(), id);
     }
 
+    @Override
+    public int deleteBoard(Long id) {
+        return jdbcTemplate.update("delete from board where id = ?", id);
+    }
+
     private RowMapper<BoardResponseDto> boardResponseRowRapper() {
         return new RowMapper<BoardResponseDto>() {
             @Override
