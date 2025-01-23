@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum BoardColumn {
     ID("id"),
     AUTHOR_ID("author_id"),
+    AUTHOR_NAME("author_name"),
     PASSWORD("password"),
     TITLE("title"),
     CONTENTS("contents"),

@@ -2,10 +2,13 @@ package com.example.todolist.board.controller;
 
 import com.example.todolist.board.dto.BoardRequestDto;
 import com.example.todolist.board.dto.BoardResponseDto;
+import com.example.todolist.board.dto.PagingResponseDto;
 import com.example.todolist.board.service.BoardService;
+import com.example.todolist.board.entity.Paging;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,11 +28,30 @@ public class BoardController {
     }
 
     @GetMapping
-    public ResponseEntity<List<BoardResponseDto>> findAllBoards(
-            @RequestParam(required = false) String created_at,
-            @RequestParam(required = false) Long author_id
+    public ResponseEntity<PagingResponseDto<BoardResponseDto>> findAllBoards(
+            @RequestParam(value = "created_at", required = false) String createdAt,
+            @RequestParam(value = "author_id", required = false) Long authorId,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size
     ) {
-        return new ResponseEntity<>(boardService.findAllBoards(created_at, author_id), HttpStatus.OK);
+        if (page != null && size != null) {
+            if (page < 1 || size < 1 || size > 100) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number and size must be greater than 0 and size must be less than or equal to 100");
+            }
+            Paging paging = new Paging(page, size);
+            PagingResponseDto<BoardResponseDto> response = boardService.findAllBoards(createdAt, authorId, paging);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            List<BoardResponseDto> boards = boardService.findAllBoards(createdAt, authorId);
+            PagingResponseDto<BoardResponseDto> response = new PagingResponseDto<>(
+                    boards,
+                    1,
+                    boards.size(),
+                    boards.size(),
+                    1
+            );
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
     }
 
     @GetMapping("/{id}")

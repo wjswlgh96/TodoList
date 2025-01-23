@@ -1,16 +1,17 @@
 package com.example.todolist.board.service;
 
+import com.example.todolist.board.dto.BoardPasswordResponseDto;
 import com.example.todolist.board.dto.BoardRequestDto;
 import com.example.todolist.board.dto.BoardResponseDto;
+import com.example.todolist.board.dto.PagingResponseDto;
 import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.repository.BoardRepository;
-import com.sun.net.httpserver.HttpsServer;
+import com.example.todolist.board.entity.Paging;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,6 +40,11 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public PagingResponseDto<BoardResponseDto> findAllBoards(String createdAt, Long authorId, Paging paging) {
+        return boardRepository.findAllBoards(createdAt, authorId, paging);
+    }
+
+    @Override
     public BoardResponseDto findBoardById(Long id) {
         return new BoardResponseDto(boardRepository.findBoardByIdOrElseThrow(id));
     }
@@ -50,7 +56,7 @@ public class BoardServiceImpl implements BoardService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
         }
 
-        Board board = boardRepository.findBoardByIdOrElseThrow(id);
+        BoardPasswordResponseDto board = boardRepository.findBoardByIdOrElseThrow(id);
         if (!validatePassword(board.getPassword(), password)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong Password");
         }
@@ -66,7 +72,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public void deleteMemo(Long id, String password) {
-        Board board = boardRepository.findBoardByIdOrElseThrow(id);
+        BoardPasswordResponseDto board = boardRepository.findBoardByIdOrElseThrow(id);
         if (!validatePassword(board.getPassword(), password)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong Password");
         }
