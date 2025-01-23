@@ -8,11 +8,11 @@ import java.util.List;
 public interface BoardService {
     BoardResponseDto saveBoard(BoardRequestDto requestDto);
 
-    List<BoardResponseDto> findAllBoards(String createdAt, String author);
+    List<BoardResponseDto> findAllBoards(String createdAt, Long authorId);
 
     BoardResponseDto findBoardById(Long id);
 
-    BoardResponseDto updateBoard(Long id, String password, String author, String contents);
+    BoardResponseDto updateBoard(Long id, String password, String title, String contents);
 
     void deleteMemo(Long id, String password);
 }

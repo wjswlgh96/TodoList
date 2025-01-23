@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -28,9 +27,9 @@ public class BoardController {
     @GetMapping
     public ResponseEntity<List<BoardResponseDto>> findAllBoards(
             @RequestParam(required = false) String created_at,
-            @RequestParam(required = false) String author
+            @RequestParam(required = false) Long author_id
     ) {
-        return new ResponseEntity<>(boardService.findAllBoards(created_at, author), HttpStatus.OK);
+        return new ResponseEntity<>(boardService.findAllBoards(created_at, author_id), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -40,7 +39,7 @@ public class BoardController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
-        return new ResponseEntity<>(boardService.updateBoard(id, requestDto.getPassword(), requestDto.getAuthor(), requestDto.getContents()), HttpStatus.OK);
+        return new ResponseEntity<>(boardService.updateBoard(id, requestDto.getPassword(), requestDto.getTitle(), requestDto.getContents()), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

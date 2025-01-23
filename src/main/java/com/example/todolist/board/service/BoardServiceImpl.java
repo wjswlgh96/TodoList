@@ -25,19 +25,17 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardResponseDto saveBoard(BoardRequestDto requestDto) {
         Board board = new Board(
-                requestDto.getAuthor(),
+                requestDto.getAuthor_id(),
                 requestDto.getPassword(),
                 requestDto.getTitle(),
-                requestDto.getContents(),
-                LocalDateTime.now(),
-                LocalDateTime.now()
+                requestDto.getContents()
         );
         return boardRepository.saveBoard(board);
     }
 
     @Override
-    public List<BoardResponseDto> findAllBoards(String createdAt, String author) {
-        return boardRepository.findAllBoards(createdAt, author);
+    public List<BoardResponseDto> findAllBoards(String createdAt, Long authorId) {
+        return boardRepository.findAllBoards(createdAt, authorId);
     }
 
     @Override
@@ -47,9 +45,9 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public BoardResponseDto updateBoard(Long id, String password, String author, String contents) {
-        if (author == null || contents == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The author and contents are required values.");
+    public BoardResponseDto updateBoard(Long id, String password, String title, String contents) {
+        if (title == null || contents == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
         }
 
         Board board = boardRepository.findBoardByIdOrElseThrow(id);
@@ -57,11 +55,12 @@ public class BoardServiceImpl implements BoardService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong Password");
         }
 
-        int updatedRow = boardRepository.updateBoard(id, author, contents);
+        int updatedRow = boardRepository.updateBoard(id, title, contents);
         if (updatedRow == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No data has been modified.");
         }
-        board.updateBoard(author, contents);
+
+        board = boardRepository.findBoardByIdOrElseThrow(id);
         return new BoardResponseDto(board);
     }
 

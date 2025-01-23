@@ -33,44 +33,44 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
     @Override
     public BoardResponseDto saveBoard(Board board) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
-        jdbcInsert.withTableName("board").usingGeneratedKeyColumns("id");
+        jdbcInsert.withTableName("board")
+                .usingColumns("password", "author_id", "title", "contents")
+                .usingGeneratedKeyColumns("id");
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("password", board.getPassword());
-        parameters.put("author", board.getAuthor());
+        parameters.put("author_id", board.getAuthorId());
         parameters.put("title", board.getTitle());
         parameters.put("contents", board.getContents());
-        parameters.put("created_at", board.getCreatedAt());
-        parameters.put("updated_at", board.getUpdatedAt());
 
         Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
+        Board insertedBoard = findBoardByIdOrElseThrow(key.longValue());
+
         return new BoardResponseDto(
-                key.longValue(),
-                board.getAuthor(),
-                board.getTitle(),
-                board.getContents(),
-                board.getCreatedAt(),
-                board.getUpdatedAt()
+                insertedBoard.getId(),
+                insertedBoard.getAuthorId(),
+                insertedBoard.getTitle(),
+                insertedBoard.getContents(),
+                insertedBoard.getCreatedAt(),
+                insertedBoard.getUpdatedAt()
         );
     }
 
     @Override
-    public List<BoardResponseDto> findAllBoards(String createdAt, String author) {
-        String sql = "select * from board where 1=1";
+    public List<BoardResponseDto> findAllBoards(String createdAt, Long authorId) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM board WHERE 1=1");
+        List<Object> params = new ArrayList<>();
 
-        List<String> params = new ArrayList<>();
-
-        if (author != null) {
-            sql += " and author = ?";
-            params.add(author);
+        if (authorId != null) {
+            sql.append(" AND author_id = ?");
+            params.add(authorId);
         }
 
         if (createdAt != null) {
-            sql += " and DATE(created_at) = ? order by created_at DESC";
+            sql.append(" AND DATE(created_at) = ?");
             params.add(createdAt);
         }
-
-        return jdbcTemplate.query(sql, params.toArray(), boardResponseRowRapper());
+        return jdbcTemplate.query(sql.toString(), params.toArray(), boardResponseRowRapper());
     }
 
     @Override
@@ -80,8 +80,8 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
     }
 
     @Override
-    public int updateBoard(Long id, String author, String contents) {
-        return jdbcTemplate.update("update board set author = ?, contents = ?, updated_at = ? where id = ?", author, contents, LocalDateTime.now(), id);
+    public int updateBoard(Long id, String title, String contents) {
+        return jdbcTemplate.update("update board set title = ?, contents = ? where id = ?", title, contents, id);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
             public BoardResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new BoardResponseDto(
                         rs.getLong("id"),
-                        rs.getString("author"),
+                        rs.getLong("author_id"),
                         rs.getString("title"),
                         rs.getString("contents"),
                         rs.getTimestamp("created_at").toLocalDateTime(),
@@ -111,7 +111,7 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
             public Board mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new Board(
                         rs.getLong("id"),
-                        rs.getString("author"),
+                        rs.getLong("author_id"),
                         rs.getString("password"),
                         rs.getString("title"),
                         rs.getString("contents"),

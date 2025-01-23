@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BoardResponseDto {
     private Long id;
-    private String author;
+    private Long authorId;
     private String title;
     private String contents;
     private LocalDateTime createdAt;
@@ -18,7 +18,7 @@ public class BoardResponseDto {
 
     public BoardResponseDto(Board board) {
         this.id = board.getId();
-        this.author = board.getAuthor();
+        this.authorId = board.getAuthorId();
         this.title = board.getTitle();
         this.contents = board.getContents();
         this.createdAt = board.getCreatedAt();
