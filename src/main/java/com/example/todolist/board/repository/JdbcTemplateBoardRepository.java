@@ -69,20 +69,42 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
             params.add(createdAt);
         }
 
-        return jdbcTemplate.query(sql, params.toArray(), boardRowRapper());
+        return jdbcTemplate.query(sql, params.toArray(), boardResponseRowRapper());
     }
 
     @Override
-    public BoardResponseDto findMemoByIdOrElseThrow(Long id) {
-        List<BoardResponseDto> result = jdbcTemplate.query("select * from board where id = ?", boardRowRapper(), id);
+    public Board findMemoByIdOrElseThrow(Long id) {
+        List<Board> result = jdbcTemplate.query("select * from board where id = ?", boardRowRapper(), id);
         return result.stream().findAny().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id));
     }
 
-    private RowMapper<BoardResponseDto> boardRowRapper() {
+    @Override
+    public BoardResponseDto updateBoard(Long id, String password, String author, String contents) {
+
+        return null;
+    }
+
+    private RowMapper<BoardResponseDto> boardResponseRowRapper() {
         return new RowMapper<BoardResponseDto>() {
             @Override
             public BoardResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new BoardResponseDto(
+                        rs.getLong("id"),
+                        rs.getString("author"),
+                        rs.getString("title"),
+                        rs.getString("contents"),
+                        rs.getTimestamp("created_at").toLocalDateTime(),
+                        rs.getTimestamp("updated_at").toLocalDateTime()
+                );
+            }
+        };
+    }
+
+    private RowMapper<Board> boardRowRapper() {
+        return new RowMapper<Board>() {
+            @Override
+            public Board mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return new Board(
                         rs.getLong("id"),
                         rs.getString("author"),
                         rs.getString("title"),

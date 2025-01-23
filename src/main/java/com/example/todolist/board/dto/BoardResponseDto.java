@@ -16,4 +16,12 @@ public class BoardResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public BoardResponseDto(Board board) {
+        this.id = board.getId();
+        this.author = board.getAuthor();
+        this.title = board.getTitle();
+        this.contents = board.getContents();
+        this.createdAt = board.getCreatedAt();
+        this.updatedAt = board.getUpdatedAt();
+    }
 }

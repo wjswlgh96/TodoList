@@ -38,6 +38,6 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public BoardResponseDto findBoardById(Long id) {
-        return boardRepository.findMemoByIdOrElseThrow(id);
+        return new BoardResponseDto(boardRepository.findMemoByIdOrElseThrow(id));
     }
 }
