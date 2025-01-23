@@ -37,4 +37,9 @@ public class BoardController {
     public ResponseEntity<BoardResponseDto> findBoardById(@PathVariable Long id) {
         return new ResponseEntity<>(boardService.findBoardById(id), HttpStatus.OK);
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
+        return new ResponseEntity<>(boardService.updateBoard(id, requestDto.getPassword(), requestDto.getAuthor(), requestDto.getContents()), HttpStatus.OK);
+    }
 }

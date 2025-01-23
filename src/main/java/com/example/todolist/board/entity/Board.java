@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
+@AllArgsConstructor
 public class Board {
 
     private Long id;
@@ -34,5 +35,9 @@ public class Board {
         this.updatedAt = updatedAt;
     }
 
-
+    public void updateBoard(String author, String contents) {
+        this.author = author;
+        this.contents = contents;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

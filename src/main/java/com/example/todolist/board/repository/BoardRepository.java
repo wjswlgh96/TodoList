@@ -11,7 +11,7 @@ public interface BoardRepository {
 
     List<BoardResponseDto> findAllBoards(String createdAt, String author);
 
-    Board findMemoByIdOrElseThrow(Long id);
+    Board findBoardByIdOrElseThrow(Long id);
 
-    BoardResponseDto updateBoard(Long id, String password, String author, String contents);
+    int updateBoard(Long id, String author, String contents);
 }

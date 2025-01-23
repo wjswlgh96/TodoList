@@ -11,4 +11,7 @@ public interface BoardService {
     List<BoardResponseDto> findAllBoards(String createdAt, String author);
 
     BoardResponseDto findBoardById(Long id);
+
+    BoardResponseDto updateBoard(Long id, String password, String author, String contents);
+
 }

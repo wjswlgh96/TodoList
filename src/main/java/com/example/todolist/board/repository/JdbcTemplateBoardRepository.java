@@ -36,6 +36,7 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
         jdbcInsert.withTableName("board").usingGeneratedKeyColumns("id");
 
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put("password", board.getPassword());
         parameters.put("author", board.getAuthor());
         parameters.put("title", board.getTitle());
         parameters.put("contents", board.getContents());
@@ -73,15 +74,14 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
     }
 
     @Override
-    public Board findMemoByIdOrElseThrow(Long id) {
+    public Board findBoardByIdOrElseThrow(Long id) {
         List<Board> result = jdbcTemplate.query("select * from board where id = ?", boardRowRapper(), id);
         return result.stream().findAny().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Does not exist id = " + id));
     }
 
     @Override
-    public BoardResponseDto updateBoard(Long id, String password, String author, String contents) {
-
-        return null;
+    public int updateBoard(Long id, String author, String contents) {
+        return jdbcTemplate.update("update board set author = ?, contents = ?, updated_at = ? where id = ?", author, contents, LocalDateTime.now(), id);
     }
 
     private RowMapper<BoardResponseDto> boardResponseRowRapper() {
@@ -107,6 +107,7 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
                 return new Board(
                         rs.getLong("id"),
                         rs.getString("author"),
+                        rs.getString("password"),
                         rs.getString("title"),
                         rs.getString("contents"),
                         rs.getTimestamp("created_at").toLocalDateTime(),
