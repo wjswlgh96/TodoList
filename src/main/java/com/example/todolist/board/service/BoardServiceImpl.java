@@ -8,7 +8,7 @@ import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.repository.BoardRepository;
 import com.example.todolist.board.entity.Paging;
 import com.example.todolist.exception.NotFoundException;
-import com.example.todolist.exception.IllegalArgumentException;
+import com.example.todolist.exception.BadRequestException;
 import com.example.todolist.exception.InvalidPasswordException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +54,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardResponseDto updateBoard(Long id, String password, String title, String contents) {
         if (title == null || contents == null) {
-            throw new IllegalArgumentException("제목이나 내용 값이 빠졌습니다. 두 값은 필수입니다.");
+            throw new BadRequestException("제목이나 내용 값이 빠졌습니다. 두 값은 필수입니다.");
         }
 
         BoardPasswordResponseDto board = boardRepository.findBoardByIdOrElseThrow(id);

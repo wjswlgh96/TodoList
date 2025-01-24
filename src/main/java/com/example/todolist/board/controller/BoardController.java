@@ -5,13 +5,10 @@ import com.example.todolist.board.dto.BoardResponseDto;
 import com.example.todolist.board.dto.PagingResponseDto;
 import com.example.todolist.board.service.BoardService;
 import com.example.todolist.board.entity.Paging;
-import com.example.todolist.exception.IllegalArgumentException;
+import com.example.todolist.exception.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/boards")
@@ -39,7 +36,7 @@ public class BoardController {
         // PagingResponseDto = Pagination을 위한 Dto
         if (page != null && size != null) {
             if (page < 1 || size < 1 || size > 100) {
-                throw new IllegalArgumentException("페이지, 사이즈는 0보다 커야하고, 사이즈는 100보단 작아야 합니다.");
+                throw new BadRequestException("페이지, 사이즈는 0보다 커야하고, 사이즈는 100보단 작아야 합니다.");
             }
             Paging paging = new Paging(page, size);
             PagingResponseDto<BoardResponseDto> response = boardService.findAllBoards(createdAt, authorId, paging);
