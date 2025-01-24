@@ -1,5 +1,6 @@
 package com.example.todolist.board.controller;
 
+import com.example.todolist.board.dto.request.BoardPasswordRequestDto;
 import com.example.todolist.board.dto.request.BoardRequestDto;
 import com.example.todolist.board.dto.response.BoardResponseDto;
 import com.example.todolist.board.dto.request.BoardUpdateRequestDto;
@@ -7,8 +8,12 @@ import com.example.todolist.board.dto.response.PagingResponseDto;
 import com.example.todolist.board.service.BoardService;
 import com.example.todolist.board.entity.Paging;
 import com.example.todolist.exception.BadRequestException;
+import com.example.todolist.exception.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -34,7 +39,20 @@ public class BoardController {
 
     // Dto를 interface화 시킬 수 있나 고민했다가 포기하고 ?로 타입에 자유를 줬음
     @GetMapping
-    @Operation(summary = "게시글 조회", description = "모든 게시글 목록을 조회합니다.")
+    @Operation(
+            summary = "게시글 조회",
+            description = "모든 게시글 목록을 조회합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "게시글 조회 기본 응답값",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = BoardResponseDto.class))
+                            )
+                    )
+            }
+    )
     public ResponseEntity<?> findAllBoards(
             @RequestParam(value = "created_at", required = false)
             @Schema(description = "게시글 생성 날짜 (형식: YYYY-MM-DD)") String createdAt,
@@ -75,7 +93,7 @@ public class BoardController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "게시글 삭제", description = "주어진 ID에 해당하는 게시글을 삭제합니다.")
-    public ResponseEntity<Void> deleteBoard(@PathVariable Long id, @Valid @RequestBody BoardRequestDto requestDto) {
+    public ResponseEntity<Void> deleteBoard(@PathVariable Long id, @Valid @RequestBody BoardPasswordRequestDto requestDto) {
         boardService.deleteMemo(id, requestDto.getPassword());
         return new ResponseEntity<>(HttpStatus.OK);
     }
