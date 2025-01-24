@@ -1,8 +1,8 @@
 package com.example.todolist.board.repository;
 
-import com.example.todolist.board.dto.BoardPasswordResponseDto;
-import com.example.todolist.board.dto.BoardResponseDto;
-import com.example.todolist.board.dto.PagingResponseDto;
+import com.example.todolist.board.dto.response.BoardPasswordResponseDto;
+import com.example.todolist.board.dto.response.BoardResponseDto;
+import com.example.todolist.board.dto.response.PagingResponseDto;
 import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.entity.Paging;
 

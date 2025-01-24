@@ -5,14 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
-// 전역 예외 처리는 신세계다
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice(annotations = {RestController.class})
 public class GlobalExceptionHandler {
 
     // 비밀번호 불일치 및 잘못된 요청
@@ -69,6 +71,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    // 데이터 검증 @Valid 예외
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String errorMessage = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        log.error("데이터 검증 예외: {}", errorMessage, e);
+        ErrorResponseDto response = new ErrorResponseDto(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                errorMessage
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     // 예상치 못한 예외
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponseDto> handleGeneralException(RuntimeException e) {
@@ -80,9 +100,6 @@ public class GlobalExceptionHandler {
                 "서버 내부 오류가 발생했습니다. 관리자에게 문의하세요"
         );
 
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

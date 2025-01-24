@@ -1,8 +1,8 @@
 package com.example.todolist.board.service;
 
-import com.example.todolist.board.dto.BoardRequestDto;
-import com.example.todolist.board.dto.BoardResponseDto;
-import com.example.todolist.board.dto.PagingResponseDto;
+import com.example.todolist.board.dto.request.BoardRequestDto;
+import com.example.todolist.board.dto.response.BoardResponseDto;
+import com.example.todolist.board.dto.response.PagingResponseDto;
 import com.example.todolist.board.entity.Paging;
 
 import java.util.List;

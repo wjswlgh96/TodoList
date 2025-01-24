@@ -1,14 +1,13 @@
 package com.example.todolist.board.service;
 
-import com.example.todolist.board.dto.BoardPasswordResponseDto;
-import com.example.todolist.board.dto.BoardRequestDto;
-import com.example.todolist.board.dto.BoardResponseDto;
-import com.example.todolist.board.dto.PagingResponseDto;
+import com.example.todolist.board.dto.response.BoardPasswordResponseDto;
+import com.example.todolist.board.dto.request.BoardRequestDto;
+import com.example.todolist.board.dto.response.BoardResponseDto;
+import com.example.todolist.board.dto.response.PagingResponseDto;
 import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.repository.BoardRepository;
 import com.example.todolist.board.entity.Paging;
 import com.example.todolist.exception.NotFoundException;
-import com.example.todolist.exception.BadRequestException;
 import com.example.todolist.exception.InvalidPasswordException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardResponseDto saveBoard(BoardRequestDto requestDto) {
         Board board = new Board(
-                requestDto.getAuthor_id(),
+                requestDto.getAuthorId(),
                 requestDto.getPassword(),
                 requestDto.getTitle(),
                 requestDto.getContents()
@@ -53,10 +52,6 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     @Override
     public BoardResponseDto updateBoard(Long id, String password, String title, String contents) {
-        if (title == null || contents == null) {
-            throw new BadRequestException("제목이나 내용 값이 빠졌습니다. 두 값은 필수입니다.");
-        }
-
         BoardPasswordResponseDto board = boardRepository.findBoardByIdOrElseThrow(id);
         if (!validatePassword(board.getPassword(), password)) {
             throw new InvalidPasswordException();

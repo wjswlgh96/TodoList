@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -26,6 +27,7 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+    @Transactional
     @Override
     public AuthorResponseDto saveAuthor(Author author) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
@@ -33,7 +35,7 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
                         .usingColumns(
                                 AuthorColumn.NAME.getColumnName(),
                                 AuthorColumn.EMAIL.getColumnName()
-                        )      // 사용할 컬럼을 명확히 지정해주지 않아 created_At과 updated_at이 NULL이 되어버린 문제
+                        )      // 사용할 컬럼을 명확히 지정해주지 않아 created_at과 updated_at이 NULL이 되어버린 문제 - Trouble
                         .usingGeneratedKeyColumns("id");
 
         Map<String, Object> parameters = new HashMap<>();
@@ -63,11 +65,13 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
         return result.stream().findAny().orElseThrow(() -> new NotFoundException("해당 아이디의 작성자가 존재하지 않습니다 id = " + id));
     }
 
+    @Transactional
     @Override
     public int updateAuthor(Long id, String name, String email) {
         return jdbcTemplate.update("update author set name = ?, email = ? where id = ?", name, email, id);
     }
 
+    @Transactional
     @Override
     public int deleteAuthor(Long id) {
         return jdbcTemplate.update("delete from author where id = ?", id);

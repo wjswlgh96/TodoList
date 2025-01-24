@@ -1,8 +1,8 @@
 package com.example.todolist.board.repository;
 
-import com.example.todolist.board.dto.BoardPasswordResponseDto;
-import com.example.todolist.board.dto.BoardResponseDto;
-import com.example.todolist.board.dto.PagingResponseDto;
+import com.example.todolist.board.dto.response.BoardPasswordResponseDto;
+import com.example.todolist.board.dto.response.BoardResponseDto;
+import com.example.todolist.board.dto.response.PagingResponseDto;
 import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.enums.BoardColumn;
 import com.example.todolist.board.entity.Paging;
@@ -138,11 +138,13 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
         return result.stream().findAny().orElseThrow(() -> new NotFoundException("해당 아이디의 게시글이 존재하지 않습니다 id = " + id));
     }
 
+    @Transactional
     @Override
     public int updateBoard(Long id, String title, String contents) {
         return jdbcTemplate.update("update board set title = ?, contents = ? where id = ?", title, contents, id);
     }
 
+    @Transactional
     @Override
     public int deleteBoard(Long id) {
         return jdbcTemplate.update("delete from board where id = ?", id);
