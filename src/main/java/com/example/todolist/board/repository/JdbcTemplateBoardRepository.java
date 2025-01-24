@@ -6,6 +6,7 @@ import com.example.todolist.board.dto.response.PagingResponseDto;
 import com.example.todolist.board.entity.Board;
 import com.example.todolist.board.enums.BoardColumn;
 import com.example.todolist.board.entity.Paging;
+import com.example.todolist.board.enums.BoardSQL;
 import com.example.todolist.exception.NotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -22,11 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.todolist.board.enums.BoardSQL.*;
+
 @Repository
 public class JdbcTemplateBoardRepository implements BoardRepository {
-
-    private static final String GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY =
-            "SELECT b.*, a.name AS author_name FROM board AS b JOIN author AS a ON b.author_id = a.id";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -56,7 +56,7 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
         Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
         long id = key.longValue();
         List<BoardResponseDto> result = jdbcTemplate.query(
-                GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY + " WHERE b.id = ?",
+                QUERY_FIND_BY_ID.getSql(),
                 new Object[]{id}, boardResponseRowMapper()
         );
         
@@ -66,16 +66,16 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
 
     @Override
     public List<BoardResponseDto> findAllBoards(String createdAt, Long authorId) {
-        StringBuilder sql = new StringBuilder(GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY + " WHERE 1=1");
+        StringBuilder sql = new StringBuilder(QUERY_FIND_ALL.getSql());
         List<Object> params = new ArrayList<>();
 
         if (authorId != null) {
-            sql.append(" AND author_id = ?");
+            sql.append(QUERY_WHERE_AUTHOR_ID.getSql());
             params.add(authorId);
         }
 
         if (createdAt != null) {
-            sql.append(" AND DATE(created_at) = ?");
+            sql.append(QUERY_WHERE_CREATED_AT.getSql());
             params.add(createdAt);
         }
 
@@ -85,40 +85,40 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
     @Transactional
     @Override
     public PagingResponseDto<BoardResponseDto> findAllBoards(String createdAt, Long authorId, Paging paging) {
-        String countSql = "SELECT COUNT(*) FROM board b JOIN author a ON b.author_id = a.id WHERE 1=1";
+        StringBuilder countSql = new StringBuilder(QUERY_SELECT_ALL_COUNT.getSql());
         List<Object> countParams = new ArrayList<>();
 
         if (authorId != null) {
-            countSql += " AND b.author_id = ?";
+            countSql.append(QUERY_WHERE_AUTHOR_ID.getSql());
             countParams.add(authorId);
         }
 
         if (createdAt != null) {
-            countSql += " AND DATE(b.created_at) = ?";
+            countSql.append(QUERY_WHERE_CREATED_AT.getSql());
             countParams.add(createdAt);
         }
 
-        Long totalItems = jdbcTemplate.queryForObject(countSql, countParams.toArray(), Long.class);
+        Long totalItems = jdbcTemplate.queryForObject(countSql.toString(), countParams.toArray(), Long.class);
 
         // 데이터 조회
-        String dataSql = GET_ALL_BOARDS_AND_PLUS_AUTHOR_NAME_QUERY + " WHERE 1=1";
+        StringBuilder dataSql = new StringBuilder(QUERY_FIND_ALL.getSql());
         List<Object> dataParams = new ArrayList<>();
 
         if (authorId != null) {
-            dataSql += " AND b.author_id = ?";
+            dataSql.append(QUERY_WHERE_AUTHOR_ID.getSql());
             dataParams.add(authorId);
         }
 
         if (createdAt != null) {
-            dataSql += " AND DATE(b.created_at) = ?";
+            dataSql.append(QUERY_WHERE_CREATED_AT.getSql());
             dataParams.add(createdAt);
         }
 
-        dataSql += " ORDER BY b.created_at DESC LIMIT ? OFFSET ?";
+        dataSql.append(QUERY_ORDER_BY_CREATE_AT_AND_USE_PAGINATION.getSql());
         dataParams.add(paging.getSize());
         dataParams.add(paging.getOffset());
 
-        List<BoardResponseDto> items = jdbcTemplate.query(dataSql, dataParams.toArray(), boardResponseRowMapper());
+        List<BoardResponseDto> items = jdbcTemplate.query(dataSql.toString(), dataParams.toArray(), boardResponseRowMapper());
         int totalPages = (int) Math.ceil((double) totalItems / paging.getSize());
 
         return new PagingResponseDto<>(
@@ -132,22 +132,20 @@ public class JdbcTemplateBoardRepository implements BoardRepository {
 
     @Override
     public BoardPasswordResponseDto findBoardByIdOrElseThrow(Long id) {
-        List<BoardPasswordResponseDto> result = jdbcTemplate.query(
-                "SELECT b.*, a.name AS author_name FROM board AS b JOIN author AS a ON b.author_id = a.id WHERE b.id = ?", boardRowMapper(), id
-        );
+        List<BoardPasswordResponseDto> result = jdbcTemplate.query(QUERY_FIND_BY_ID.getSql(), boardRowMapper(), id);
         return result.stream().findAny().orElseThrow(() -> new NotFoundException("해당 아이디의 게시글이 존재하지 않습니다 id = " + id));
     }
 
     @Transactional
     @Override
     public int updateBoard(Long id, String title, String contents) {
-        return jdbcTemplate.update("update board set title = ?, contents = ? where id = ?", title, contents, id);
+        return jdbcTemplate.update(QUERY_UPDATE.getSql(), title, contents, id);
     }
 
     @Transactional
     @Override
     public int deleteBoard(Long id) {
-        return jdbcTemplate.update("delete from board where id = ?", id);
+        return jdbcTemplate.update(QUERY_DELETE.getSql(), id);
     }
 
     private RowMapper<BoardResponseDto> boardResponseRowMapper() {

@@ -2,6 +2,7 @@ package com.example.todolist.exception;
 
 import com.example.todolist.exception.dto.ErrorResponseDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,20 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
                 e.getMessage()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    // 존재하지 않는 외래 키
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.error("존재하지 않는 외래 키: {}", e.getMessage(), e);
+        ErrorResponseDto response = new ErrorResponseDto(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                "해당 작성자가 존재하지 않습니다: "
         );
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
