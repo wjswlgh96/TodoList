@@ -38,7 +38,7 @@ public class JdbcTemplateAuthRepositoryImpl implements AuthorRepository {
                         .usingColumns(
                                 AuthorColumn.NAME.getColumnName(),
                                 AuthorColumn.EMAIL.getColumnName()
-                        )      // 사용할 컬럼을 명확히 지정해주지 않아 created_at과 updated_at이 NULL이 되어버린 문제 - Trouble
+                        )
                         .usingGeneratedKeyColumns("id");
 
         Map<String, Object> parameters = new HashMap<>();

@@ -8,7 +8,6 @@ import com.example.todolist.board.dto.response.PagingResponseDto;
 import com.example.todolist.board.service.BoardService;
 import com.example.todolist.board.entity.Paging;
 import com.example.todolist.exception.BadRequestException;
-import com.example.todolist.exception.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
