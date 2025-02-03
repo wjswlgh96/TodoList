@@ -90,7 +90,7 @@ public class BoardController {
         return new ResponseEntity<>(boardService.updateBoard(id, requestDto.getPassword(), requestDto.getTitle(), requestDto.getContents()), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     @Operation(summary = "게시글 삭제", description = "주어진 ID에 해당하는 게시글을 삭제합니다.")
     public ResponseEntity<Void> deleteBoard(@PathVariable Long id, @Valid @RequestBody BoardPasswordRequestDto requestDto) {
         boardService.deleteMemo(id, requestDto.getPassword());
