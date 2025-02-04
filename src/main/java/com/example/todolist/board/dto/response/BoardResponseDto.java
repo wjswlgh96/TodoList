@@ -24,4 +24,13 @@ public class BoardResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public BoardResponseDto(BoardPasswordResponseDto dto) {
+        this.id = dto.getId();
+        this.authorId = dto.getAuthorId();
+        this.authorName = dto.getAuthorName();
+        this.title = dto.getTitle();
+        this.contents = dto.getContents();
+        this.createdAt = dto.getCreatedAt();
+        this.updatedAt = dto.getUpdatedAt();
+    }
 }
